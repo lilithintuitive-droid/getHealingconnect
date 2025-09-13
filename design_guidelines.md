@@ -7,16 +7,17 @@
 
 ### A. Color Palette
 **Primary Colors:**
-- Light mode: 168 65% 35% (sage green - calming, natural)
-- Dark mode: 168 45% 25% (deeper sage)
+- Light mode: 25 45% 45% (warm amber - sacred, grounding)
+- Dark mode: 25 35% 35% (deeper amber)
 
 **Accent Colors:**
-- Warm terracotta: 25 60% 55% (used sparingly for CTAs)
-- Neutral grays: 220 10% 95% (light), 220 15% 15% (dark)
+- Soft terracotta: 15 35% 90% (used for cards and backgrounds)
+- Warm earth tones: 35 25% 85% (secondary elements)
+- Neutral warm grays: 30 15% 88% (light), 30 10% 12% (dark)
 
 **Background Treatments:**
-- Subtle earth-tone gradients from sage to soft cream
-- Gentle overlay patterns suggesting natural textures
+- Subtle warm earth-tone gradients from amber to soft cream
+- Gentle overlay patterns suggesting natural textures and sacred geometry
 
 ### B. Typography
 - **Primary**: Inter (Google Fonts) - clean, professional

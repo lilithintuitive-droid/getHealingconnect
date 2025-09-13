@@ -57,7 +57,7 @@ export default function FilterSidebar({ filters, onFiltersChange, onClearFilters
                           filters.availability !== "any" ||
                           filters.rating > 0 ||
                           filters.distance < 50 ||
-                          (filters.location && filters.location.length > 0);
+                          (filters.location && filters.location.trim().length > 0);
 
   return (
     <div className="w-80 space-y-6">
