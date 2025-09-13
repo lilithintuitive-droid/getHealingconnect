@@ -1,11 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import type { Specialty } from "@shared/schema";
 
 interface FilterState {
   specialties: string[];
@@ -13,6 +16,7 @@ interface FilterState {
   availability: string;
   rating: number;
   distance: number;
+  location: string;
 }
 
 interface FilterSidebarProps {
@@ -22,18 +26,19 @@ interface FilterSidebarProps {
 }
 
 export default function FilterSidebar({ filters, onFiltersChange, onClearFilters }: FilterSidebarProps) {
-  const specialtyOptions = [
-    "Acupuncture",
-    "Massage Therapy",
-    "Reiki",
-    "Aromatherapy",
-    "Chinese Herbal Medicine",
-    "Meditation & Mindfulness",
-    "Yoga Therapy",
-    "Chiropractic",
-    "Naturopathy",
-    "Energy Healing"
-  ];
+  // Fetch specialties from API
+  const { data: specialties = [], isLoading: isLoadingSpecialties } = useQuery({
+    queryKey: ['/api/specialties'],
+    queryFn: async () => {
+      const response = await fetch('/api/specialties');
+      if (!response.ok) {
+        throw new Error('Failed to fetch specialties');
+      }
+      return response.json() as Promise<Specialty[]>;
+    },
+  });
+
+  const specialtyOptions = specialties.map(specialty => specialty.name);
 
   const handleSpecialtyChange = (specialty: string, checked: boolean) => {
     const newSpecialties = checked 
@@ -51,7 +56,8 @@ export default function FilterSidebar({ filters, onFiltersChange, onClearFilters
                           filters.priceRange[0] > 0 || filters.priceRange[1] < 300 ||
                           filters.availability !== "any" ||
                           filters.rating > 0 ||
-                          filters.distance < 50;
+                          filters.distance < 50 ||
+                          (filters.location && filters.location.length > 0);
 
   return (
     <div className="w-80 space-y-6">
@@ -77,10 +83,34 @@ export default function FilterSidebar({ filters, onFiltersChange, onClearFilters
                   />
                 </Badge>
               ))}
+              {filters.location && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  {filters.location}
+                  <X 
+                    className="w-3 h-3 cursor-pointer" 
+                    onClick={() => onFiltersChange({ ...filters, location: "" })}
+                  />
+                </Badge>
+              )}
             </div>
           </CardContent>
         </Card>
       )}
+
+      {/* Location Filter */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Location</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Input
+            placeholder="Enter city or zip code"
+            value={filters.location || ""}
+            onChange={(e) => onFiltersChange({ ...filters, location: e.target.value })}
+            data-testid="input-location"
+          />
+        </CardContent>
+      </Card>
 
       {/* Specialties Filter */}
       <Card>
@@ -88,19 +118,30 @@ export default function FilterSidebar({ filters, onFiltersChange, onClearFilters
           <CardTitle>Specialties</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {specialtyOptions.map((specialty) => (
-            <div key={specialty} className="flex items-center space-x-2">
-              <Checkbox
-                id={specialty}
-                checked={filters.specialties.includes(specialty)}
-                onCheckedChange={(checked) => handleSpecialtyChange(specialty, checked as boolean)}
-                data-testid={`checkbox-specialty-${specialty.toLowerCase().replace(/\s+/g, '-')}`}
-              />
-              <label htmlFor={specialty} className="text-sm cursor-pointer">
-                {specialty}
-              </label>
+          {isLoadingSpecialties ? (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-muted rounded animate-pulse"></div>
+                  <div className="h-4 bg-muted rounded w-24 animate-pulse"></div>
+                </div>
+              ))}
             </div>
-          ))}
+          ) : (
+            specialtyOptions.map((specialty) => (
+              <div key={specialty} className="flex items-center space-x-2">
+                <Checkbox
+                  id={specialty}
+                  checked={filters.specialties.includes(specialty)}
+                  onCheckedChange={(checked) => handleSpecialtyChange(specialty, checked as boolean)}
+                  data-testid={`checkbox-specialty-${specialty.toLowerCase().replace(/\s+/g, '-')}`}
+                />
+                <label htmlFor={specialty} className="text-sm cursor-pointer">
+                  {specialty}
+                </label>
+              </div>
+            ))
+          )}
         </CardContent>
       </Card>
 

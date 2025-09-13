@@ -26,12 +26,12 @@ export default function HeroSection() {
       {/* Content */}
       <div className="relative z-10 text-center max-w-4xl px-6">
         <h1 className="text-4xl md:text-6xl font-serif text-white mb-6 leading-tight">
-          Find Your Path to
-          <span className="text-accent block mt-2">Natural Healing</span>
+          Experience the Art of
+          <span className="text-accent block mt-2">Sacred Healing</span>
         </h1>
         <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-          Connect with trusted holistic practitioners in your area. From acupuncture to reiki, 
-          discover the healing modality that's right for you.
+          Connect with certified holistic practitioners who honor the sacred nature of healing. 
+          Discover transformative modalities that nurture mind, body, and spirit.
         </p>
 
         {/* Search Section */}
