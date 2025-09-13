@@ -1,10 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Star, Calendar, Clock, Award, Heart, MessageCircle } from "lucide-react";
+import { 
+  generatePractitionerMetaTags, 
+  generatePractitionerStructuredData,
+  generateBreadcrumbStructuredData,
+  updateMetaTags,
+  injectStructuredData
+} from "@/lib/seo-utils";
 
 interface Review {
   id: string;
@@ -37,6 +44,34 @@ interface PractitionerProfileProps {
 
 export default function PractitionerProfile({ practitioner, reviews, onBookAppointment }: PractitionerProfileProps) {
   const [activeTab, setActiveTab] = useState("about");
+
+  // SEO: Update meta tags and structured data when component mounts
+  useEffect(() => {
+    // Generate and update meta tags
+    const metaTags = generatePractitionerMetaTags(practitioner);
+    updateMetaTags(metaTags);
+
+    // Generate and inject structured data
+    const practitionerStructuredData = generatePractitionerStructuredData(practitioner);
+    injectStructuredData(practitionerStructuredData);
+
+    // Generate breadcrumb structured data
+    const breadcrumbs = [
+      { name: 'Home', url: '/' },
+      { name: 'Practitioners', url: '/practitioners' },
+      { name: practitioner.name, url: `/practitioners/${practitioner.id}` }
+    ];
+    const breadcrumbStructuredData = generateBreadcrumbStructuredData(breadcrumbs);
+    injectStructuredData(breadcrumbStructuredData);
+
+    // Cleanup function to remove dynamic structured data when component unmounts
+    return () => {
+      if (typeof document !== 'undefined') {
+        const dynamicScripts = document.querySelectorAll('script[type="application/ld+json"][data-dynamic="true"]');
+        dynamicScripts.forEach(script => script.remove());
+      }
+    };
+  }, [practitioner]);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">

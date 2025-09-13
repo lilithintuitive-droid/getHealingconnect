@@ -54,44 +54,50 @@ export default function ServiceCategories() {
   };
 
   return (
-    <section className="py-16 bg-muted/30">
+    <section className="py-16 bg-muted/30" aria-labelledby="healing-modalities-heading">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-4">
+        <header className="text-center mb-12">
+          <h2 id="healing-modalities-heading" className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-4">
             Healing Modalities
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Discover the healing approach that resonates with your journey
           </p>
-        </div>
+        </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" role="list" aria-label="Healing service categories">
           {services.map((service, index) => (
-            <Card 
-              key={index} 
+            <article 
+              key={index}
+              role="listitem"
               className="hover-elevate cursor-pointer group transition-all duration-300"
               onClick={() => handleServiceClick(service.link)}
               data-testid={`card-service-${service.title.toLowerCase().replace(/\s+/g, '-')}`}
             >
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
-                  <service.icon className="w-8 h-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-serif font-semibold text-foreground mb-4 group-hover:text-primary transition-colors">
-                  {service.title}
-                </h3>
-                <p className="text-muted-foreground mb-6 leading-relaxed">
-                  {service.description}
-                </p>
-                <Button 
-                  variant="outline" 
-                  className="group-hover:border-primary group-hover:text-primary transition-colors"
-                  data-testid={`button-learn-more-${service.title.toLowerCase().replace(/\s+/g, '-')}`}
-                >
-                  LEARN MORE
-                </Button>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors" aria-hidden="true">
+                    <service.icon className="w-8 h-8 text-primary" />
+                  </div>
+                  <header>
+                    <h3 className="text-xl font-serif font-semibold text-foreground mb-4 group-hover:text-primary transition-colors">
+                      {service.title}
+                    </h3>
+                  </header>
+                  <p className="text-muted-foreground mb-6 leading-relaxed">
+                    {service.description}
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    className="group-hover:border-primary group-hover:text-primary transition-colors"
+                    data-testid={`button-learn-more-${service.title.toLowerCase().replace(/\s+/g, '-')}`}
+                    aria-label={`Learn more about ${service.title.toLowerCase()}`}
+                  >
+                    LEARN MORE
+                  </Button>
+                </CardContent>
+              </Card>
+            </article>
           ))}
         </div>
       </div>
