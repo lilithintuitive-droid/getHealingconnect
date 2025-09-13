@@ -207,7 +207,8 @@ function HomePage() {
         <div className="min-h-screen bg-background">
           <Header isDark={isDark} onThemeToggle={() => setIsDark(!isDark)} />
           
-          <HeroSection />
+          <div className="pt-16">
+            <HeroSection />
           
           <ServiceCategories />
           
@@ -273,6 +274,7 @@ function HomePage() {
           </main>
 
           <TestimonialsSection />
+          </div>
 
           {/* Booking Modal */}
           {showBookingModal && selectedPractitionerData && (
