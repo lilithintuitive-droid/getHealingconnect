@@ -23,8 +23,8 @@ export default function Header({ isDark, onThemeToggle }: HeaderProps) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm font-serif">H</span>
+            <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{backgroundColor: 'hsl(355, 70%, 35%)'}}>
+              <span className="font-bold text-sm font-serif" style={{color: 'hsl(355, 20%, 95%)'}}>H</span>
             </div>
             <span className="text-xl font-serif font-semibold text-foreground">HealingConnect</span>
           </div>
