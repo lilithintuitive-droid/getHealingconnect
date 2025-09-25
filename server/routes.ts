@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import {
   insertPractitionerSchema,
   insertSpecialtySchema,
@@ -22,6 +23,21 @@ const practitionerSearchSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
   // Practitioners endpoints
   
   // GET /api/practitioners - Get all practitioners with optional filtering
@@ -104,6 +120,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       res.status(500).json({ error: "Failed to update practitioner" });
+    }
+  });
+
+  // Practitioner Dashboard Endpoints
+  
+  // GET /api/practitioners/profile - Get authenticated practitioner's profile
+  app.get("/api/practitioners/profile", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Find practitioner profile by user email or create if doesn't exist
+      const practitioners = await storage.searchPractitioners({ email: user.email });
+      let practitioner = practitioners[0];
+      
+      if (!practitioner && user.role === "practitioner") {
+        // Create basic practitioner profile if user is a practitioner but doesn't have one
+        const newPractitioner = {
+          name: `${user.firstName} ${user.lastName}`,
+          email: user.email,
+          bio: "Update your bio to attract more clients",
+          title: "Practitioner",
+          location: "Update your location",
+          experience: "0 years",
+          hourlyRate: 10000, // $100 in cents
+          rating: "5.0",
+          imageUrl: user.profileImageUrl || "",
+          phone: ""
+        };
+        practitioner = await storage.createPractitioner(newPractitioner);
+      }
+      
+      res.json(practitioner);
+    } catch (error) {
+      console.error("Error fetching practitioner profile:", error);
+      res.status(500).json({ error: "Failed to fetch practitioner profile" });
+    }
+  });
+
+  // GET /api/practitioners/services - Get authenticated practitioner's services
+  app.get("/api/practitioners/services", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Find practitioner by email
+      const practitioners = await storage.searchPractitioners({ email: user.email });
+      const practitioner = practitioners[0];
+      
+      if (!practitioner) {
+        return res.json([]);  // Return empty array if no practitioner profile
+      }
+
+      const services = await storage.getServices(practitioner.id);
+      res.json(services);
+    } catch (error) {
+      console.error("Error fetching practitioner services:", error);
+      res.status(500).json({ error: "Failed to fetch practitioner services" });
+    }
+  });
+
+  // GET /api/practitioners/bookings - Get authenticated practitioner's bookings
+  app.get("/api/practitioners/bookings", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Find practitioner by email
+      const practitioners = await storage.searchPractitioners({ email: user.email });
+      const practitioner = practitioners[0];
+      
+      if (!practitioner) {
+        return res.json([]);  // Return empty array if no practitioner profile
+      }
+
+      const bookings = await storage.getBookings(practitioner.id);
+      res.json(bookings);
+    } catch (error) {
+      console.error("Error fetching practitioner bookings:", error);
+      res.status(500).json({ error: "Failed to fetch practitioner bookings" });
+    }
+  });
+
+  // GET /api/practitioners/availability - Get authenticated practitioner's availability
+  app.get("/api/practitioners/availability", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Find practitioner by email
+      const practitioners = await storage.searchPractitioners({ email: user.email });
+      const practitioner = practitioners[0];
+      
+      if (!practitioner) {
+        return res.json([]);  // Return empty array if no practitioner profile
+      }
+
+      const availability = await storage.getAvailability(practitioner.id);
+      res.json(availability);
+    } catch (error) {
+      console.error("Error fetching practitioner availability:", error);
+      res.status(500).json({ error: "Failed to fetch practitioner availability" });
     }
   });
 

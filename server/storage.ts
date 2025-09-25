@@ -1,6 +1,7 @@
 import {
   type User,
   type InsertUser,
+  type UpsertUser,
   type Practitioner,
   type InsertPractitioner,
   type Specialty,
@@ -18,8 +19,10 @@ import {
 import { randomUUID } from "crypto";
 
 export interface IStorage {
-  // User methods
+  // User methods (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+  // Legacy methods for existing data
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 
@@ -35,6 +38,7 @@ export interface IStorage {
     priceRange?: [number, number];
     availability?: string;
     rating?: number;
+    email?: string;
   }): Promise<PractitionerWithSpecialties[]>;
 
   // Specialty methods
@@ -91,9 +95,49 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
+    // Legacy method - may not work with Replit Auth users
     return Array.from(this.users.values()).find(
-      (user) => user.username === username,
+      (user) => (user as any).username === username,
     );
+  }
+
+  // Required for Replit Auth
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    // Ensure we have a valid ID
+    if (!userData.id) {
+      throw new Error("User ID is required for upsert operation");
+    }
+    
+    const existingUser = this.users.get(userData.id);
+    
+    if (existingUser) {
+      // Update existing user
+      const updatedUser: User = {
+        ...existingUser,
+        id: userData.id,
+        email: userData.email ?? existingUser.email,
+        firstName: userData.firstName ?? existingUser.firstName,
+        lastName: userData.lastName ?? existingUser.lastName,
+        profileImageUrl: userData.profileImageUrl ?? existingUser.profileImageUrl,
+        updatedAt: new Date(),
+      };
+      this.users.set(userData.id, updatedUser);
+      return updatedUser;
+    } else {
+      // Create new user
+      const newUser: User = {
+        id: userData.id,
+        email: userData.email ?? null,
+        firstName: userData.firstName ?? null,
+        lastName: userData.lastName ?? null,
+        profileImageUrl: userData.profileImageUrl ?? null,
+        role: "client", // Default role for new OAuth users
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.users.set(userData.id, newUser);
+      return newUser;
+    }
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -105,7 +149,9 @@ export class MemStorage implements IStorage {
       email: insertUser.email ?? null,
       firstName: insertUser.firstName ?? null,
       lastName: insertUser.lastName ?? null,
-      createdAt: new Date()
+      profileImageUrl: (insertUser as any).profileImageUrl ?? null,
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     this.users.set(id, user);
     return user;
@@ -199,6 +245,7 @@ export class MemStorage implements IStorage {
     priceRange?: [number, number];
     availability?: string;
     rating?: number;
+    email?: string;
   }): Promise<PractitionerWithSpecialties[]> {
     let practitioners = await this.getAllPractitioners();
 
@@ -219,6 +266,13 @@ export class MemStorage implements IStorage {
     if (filters.location) {
       practitioners = practitioners.filter(practitioner =>
         practitioner.location.toLowerCase().includes(filters.location!.toLowerCase())
+      );
+    }
+
+    // Filter by email (exact match)
+    if (filters.email) {
+      practitioners = practitioners.filter(practitioner =>
+        practitioner.email === filters.email
       );
     }
 

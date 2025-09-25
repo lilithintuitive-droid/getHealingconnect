@@ -4,6 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useAuth } from "@/hooks/useAuth";
 import type { PractitionerWithSpecialties, Availability } from "@shared/schema";
 
 // Frontend transformed practitioner type
@@ -36,8 +37,11 @@ import PractitionerCard from "@/components/PractitionerCard";
 import FilterSidebar from "@/components/FilterSidebar";
 import BookingModal from "@/components/BookingModal";
 import PractitionerProfile from "@/components/PractitionerProfile";
+import LandingPage from "./components/LandingPage";
+import PractitionerDashboard from "./components/PractitionerDashboard";
 
 function HomePage() {
+  const { isAuthenticated, isLoading } = useAuth();
   const [isDark, setIsDark] = useState(false);
   const [selectedPractitioner, setSelectedPractitioner] = useState<string | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -88,7 +92,7 @@ function HomePage() {
   }, [filters]);
 
   // Fetch practitioners from API
-  const { data: practitioners = [], isLoading } = useQuery({
+  const { data: practitioners = [], isLoading: practitionersLoading } = useQuery({
     queryKey: ['/api/practitioners', queryParams],
     queryFn: async () => {
       const url = `/api/practitioners${queryParams ? `?${queryParams}` : ''}`;
@@ -234,11 +238,11 @@ function HomePage() {
                     Holistic Practitioners Near You
                   </h2>
                   <p className="text-muted-foreground">
-                    {isLoading ? "Loading..." : `${practitioners.length} practitioners found`}
+                    {practitionersLoading ? "Loading..." : `${practitioners.length} practitioners found`}
                   </p>
                 </div>
 
-                {isLoading ? (
+                {practitionersLoading ? (
                   <div className="space-y-6">
                     {[...Array(3)].map((_, i) => (
                       <div key={i} className="bg-card p-6 rounded-lg animate-pulse">
@@ -289,6 +293,34 @@ function HomePage() {
 }
 
 function Router() {
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  // Show landing page if not authenticated or loading
+  if (isLoading || !isAuthenticated) {
+    return (
+      <Switch>
+        <Route path="/" component={LandingPage} />
+        <Route component={LandingPage} />
+      </Switch>
+    );
+  }
+
+  // Handle logout
+  const handleLogout = () => {
+    window.location.href = "/api/logout";
+  };
+
+  // Show practitioner dashboard if user is a practitioner
+  if (user?.role === "practitioner") {
+    return (
+      <Switch>
+        <Route path="/" component={() => <PractitionerDashboard user={user} onLogout={handleLogout} />} />
+        <Route component={() => <PractitionerDashboard user={user} onLogout={handleLogout} />} />
+      </Switch>
+    );
+  }
+
+  // Show client interface for regular users
   return (
     <Switch>
       <Route path="/" component={HomePage} />
