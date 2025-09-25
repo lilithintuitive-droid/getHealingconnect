@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -76,11 +76,11 @@ export default function BookingModal({ isOpen, onClose, practitioner }: BookingM
               <AvatarImage src={practitioner.imageUrl} alt={practitioner.name} />
               <AvatarFallback>{practitioner.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
-            <div>
-              <h3 className="text-lg font-serif">Book with {practitioner.name}</h3>
-              <p className="text-sm text-muted-foreground">{practitioner.title}</p>
-            </div>
+            <h3 className="text-lg font-serif">Book with {practitioner.name}</h3>
           </DialogTitle>
+          <DialogDescription>
+            Schedule an appointment with {practitioner.name}, {practitioner.title}. Select your preferred date, time, and service to book your session.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
