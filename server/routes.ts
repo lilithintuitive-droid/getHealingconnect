@@ -5,7 +5,9 @@ import {
   insertPractitionerSchema,
   insertSpecialtySchema,
   insertAvailabilitySchema,
-  insertPractitionerSpecialtySchema
+  insertPractitionerSpecialtySchema,
+  insertServiceSchema,
+  insertBookingSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -245,6 +247,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error removing availability:", error);
       res.status(500).json({ error: "Failed to remove availability" });
+    }
+  });
+
+  // Service endpoints
+
+  // GET /api/practitioners/:practitionerId/services - Get services for a practitioner
+  app.get("/api/practitioners/:practitionerId/services", async (req, res) => {
+    try {
+      const { practitionerId } = req.params;
+      const services = await storage.getServices(practitionerId);
+      res.json(services);
+    } catch (error) {
+      console.error("Error fetching services:", error);
+      res.status(500).json({ error: "Failed to fetch services" });
+    }
+  });
+
+  // POST /api/services - Create new service
+  app.post("/api/services", async (req, res) => {
+    try {
+      const validatedData = insertServiceSchema.parse(req.body);
+      const service = await storage.createService(validatedData);
+      res.status(201).json(service);
+    } catch (error) {
+      console.error("Error creating service:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: error.errors 
+        });
+      }
+      res.status(500).json({ error: "Failed to create service" });
+    }
+  });
+
+  // Booking endpoints
+
+  // GET /api/bookings - Get all bookings (optionally filter by practitioner)
+  app.get("/api/bookings", async (req, res) => {
+    try {
+      const { practitionerId } = req.query;
+      const bookings = await storage.getBookings(practitionerId as string);
+      res.json(bookings);
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+      res.status(500).json({ error: "Failed to fetch bookings" });
+    }
+  });
+
+  // GET /api/bookings/:id - Get specific booking
+  app.get("/api/bookings/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const booking = await storage.getBooking(id);
+      
+      if (!booking) {
+        return res.status(404).json({ error: "Booking not found" });
+      }
+
+      res.json(booking);
+    } catch (error) {
+      console.error("Error fetching booking:", error);
+      res.status(500).json({ error: "Failed to fetch booking" });
+    }
+  });
+
+  // POST /api/bookings - Create new booking
+  app.post("/api/bookings", async (req, res) => {
+    try {
+      const validatedData = insertBookingSchema.parse(req.body);
+      const booking = await storage.createBooking(validatedData);
+      res.status(201).json(booking);
+    } catch (error) {
+      console.error("Error creating booking:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: error.errors 
+        });
+      }
+      res.status(500).json({ error: "Failed to create booking" });
+    }
+  });
+
+  // PUT /api/bookings/:id - Update booking
+  app.put("/api/bookings/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = insertBookingSchema.partial().parse(req.body);
+      
+      const updatedBooking = await storage.updateBooking(id, updates);
+      
+      if (!updatedBooking) {
+        return res.status(404).json({ error: "Booking not found" });
+      }
+
+      res.json(updatedBooking);
+    } catch (error) {
+      console.error("Error updating booking:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: error.errors 
+        });
+      }
+      res.status(500).json({ error: "Failed to update booking" });
+    }
+  });
+
+  // DELETE /api/bookings/:id - Cancel booking
+  app.delete("/api/bookings/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const cancelled = await storage.cancelBooking(id);
+      
+      if (!cancelled) {
+        return res.status(404).json({ error: "Booking not found" });
+      }
+
+      res.json({ message: "Booking cancelled successfully" });
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      res.status(500).json({ error: "Failed to cancel booking" });
     }
   });
 

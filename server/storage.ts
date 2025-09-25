@@ -9,6 +9,10 @@ import {
   type InsertPractitionerSpecialty,
   type Availability,
   type InsertAvailability,
+  type Service,
+  type InsertService,
+  type Booking,
+  type InsertBooking,
   type PractitionerWithSpecialties,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
@@ -47,6 +51,19 @@ export interface IStorage {
   getAvailability(practitionerId: string): Promise<Availability[]>;
   setAvailability(availability: InsertAvailability): Promise<Availability>;
   removeAvailability(id: string): Promise<boolean>;
+
+  // Service methods
+  getServices(practitionerId: string): Promise<Service[]>;
+  createService(service: InsertService): Promise<Service>;
+  updateService(id: string, service: Partial<InsertService>): Promise<Service | undefined>;
+  removeService(id: string): Promise<boolean>;
+
+  // Booking methods
+  getBookings(practitionerId?: string): Promise<Booking[]>;
+  getBooking(id: string): Promise<Booking | undefined>;
+  createBooking(booking: InsertBooking): Promise<Booking>;
+  updateBooking(id: string, booking: Partial<InsertBooking>): Promise<Booking | undefined>;
+  cancelBooking(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -55,6 +72,8 @@ export class MemStorage implements IStorage {
   private specialties: Map<string, Specialty>;
   private practitionerSpecialties: Map<string, PractitionerSpecialty>;
   private availability: Map<string, Availability>;
+  private services: Map<string, Service>;
+  private bookings: Map<string, Booking>;
 
   constructor() {
     this.users = new Map();
@@ -62,6 +81,8 @@ export class MemStorage implements IStorage {
     this.specialties = new Map();
     this.practitionerSpecialties = new Map();
     this.availability = new Map();
+    this.services = new Map();
+    this.bookings = new Map();
   }
 
   // User methods
@@ -346,6 +367,110 @@ export class MemStorage implements IStorage {
     // Soft delete by setting isActive to 0
     availability.isActive = 0;
     this.availability.set(id, availability);
+    return true;
+  }
+
+  // Service methods
+  async getServices(practitionerId: string): Promise<Service[]> {
+    return Array.from(this.services.values()).filter(
+      service => service.practitionerId === practitionerId && service.isActive === 1
+    );
+  }
+
+  async createService(insertService: InsertService): Promise<Service> {
+    const id = randomUUID();
+    const service: Service = {
+      ...insertService,
+      id,
+      description: insertService.description ?? null,
+      isActive: insertService.isActive ?? 1,
+      createdAt: new Date(),
+    };
+    this.services.set(id, service);
+    return service;
+  }
+
+  async updateService(id: string, updates: Partial<InsertService>): Promise<Service | undefined> {
+    const service = this.services.get(id);
+    if (!service) {
+      return undefined;
+    }
+
+    const updatedService: Service = {
+      ...service,
+      ...updates,
+    };
+    this.services.set(id, updatedService);
+    return updatedService;
+  }
+
+  async removeService(id: string): Promise<boolean> {
+    const service = this.services.get(id);
+    if (!service) {
+      return false;
+    }
+
+    // Soft delete by setting isActive to 0
+    service.isActive = 0;
+    this.services.set(id, service);
+    return true;
+  }
+
+  // Booking methods
+  async getBookings(practitionerId?: string): Promise<Booking[]> {
+    const bookings = Array.from(this.bookings.values());
+    
+    if (practitionerId) {
+      return bookings.filter(booking => booking.practitionerId === practitionerId);
+    }
+    
+    return bookings;
+  }
+
+  async getBooking(id: string): Promise<Booking | undefined> {
+    return this.bookings.get(id);
+  }
+
+  async createBooking(insertBooking: InsertBooking): Promise<Booking> {
+    const id = randomUUID();
+    const booking: Booking = {
+      ...insertBooking,
+      id,
+      clientPhone: insertBooking.clientPhone ?? null,
+      notes: insertBooking.notes ?? null,
+      status: insertBooking.status ?? "confirmed",
+      paymentStatus: insertBooking.paymentStatus ?? "pending",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.bookings.set(id, booking);
+    return booking;
+  }
+
+  async updateBooking(id: string, updates: Partial<InsertBooking>): Promise<Booking | undefined> {
+    const booking = this.bookings.get(id);
+    if (!booking) {
+      return undefined;
+    }
+
+    const updatedBooking: Booking = {
+      ...booking,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.bookings.set(id, updatedBooking);
+    return updatedBooking;
+  }
+
+  async cancelBooking(id: string): Promise<boolean> {
+    const booking = this.bookings.get(id);
+    if (!booking) {
+      return false;
+    }
+
+    booking.status = "cancelled";
+    booking.updatedAt = new Date();
+    this.bookings.set(id, booking);
     return true;
   }
 }

@@ -252,6 +252,76 @@ export async function initializeSeedData() {
     }
   }
 
+  // Create services for each practitioner
+  console.log("Creating services for practitioners...");
+  
+  const serviceTemplates = {
+    "Acupuncture": [
+      { name: "Initial Acupuncture Consultation", duration: 90, price: 15000 }, // $150
+      { name: "Follow-up Acupuncture Session", duration: 60, price: 12000 }, // $120
+      { name: "Acupuncture Package (4 sessions)", duration: 60, price: 43200 } // $432 (10% discount)
+    ],
+    "Chinese Herbal Medicine": [
+      { name: "Herbal Medicine Consultation", duration: 60, price: 10000 }, // $100
+      { name: "Custom Herbal Formula", duration: 30, price: 8000 } // $80
+    ],
+    "Deep Tissue Massage": [
+      { name: "Deep Tissue Massage (60 min)", duration: 60, price: 9000 }, // $90
+      { name: "Deep Tissue Massage (90 min)", duration: 90, price: 13000 }, // $130
+      { name: "Sports Recovery Package (3 sessions)", duration: 60, price: 24300 } // $243 (10% discount)
+    ],
+    "Sports Massage": [
+      { name: "Pre-Event Sports Massage", duration: 30, price: 5000 }, // $50
+      { name: "Post-Event Sports Massage", duration: 60, price: 8500 }, // $85
+      { name: "Sports Massage Therapy", duration: 60, price: 9000 } // $90
+    ],
+    "Reiki": [
+      { name: "Reiki Healing Session", duration: 60, price: 8500 }, // $85
+      { name: "Extended Reiki Session", duration: 90, price: 12000 }, // $120
+      { name: "Reiki Package (3 sessions)", duration: 60, price: 22950 } // $229.50 (10% discount)
+    ],
+    "Energy Healing": [
+      { name: "Energy Healing Session", duration: 75, price: 9500 }, // $95
+      { name: "Chakra Balancing Session", duration: 60, price: 8500 } // $85
+    ],
+    "Swedish Massage": [
+      { name: "Relaxation Massage (60 min)", duration: 60, price: 8000 }, // $80
+      { name: "Relaxation Massage (90 min)", duration: 90, price: 11500 } // $115
+    ],
+    "Hot Stone Massage": [
+      { name: "Hot Stone Massage Therapy", duration: 90, price: 13500 } // $135
+    ],
+    "Aromatherapy": [
+      { name: "Aromatherapy Massage", duration: 75, price: 10000 }, // $100
+      { name: "Custom Aromatherapy Blend Session", duration: 30, price: 4500 } // $45
+    ],
+    "Ayurvedic Medicine": [
+      { name: "Ayurvedic Consultation", duration: 90, price: 14000 }, // $140
+      { name: "Ayurvedic Lifestyle Coaching", duration: 60, price: 11000 }, // $110
+      { name: "Panchakarma Assessment", duration: 120, price: 18000 } // $180
+    ]
+  };
+
+  for (const practitioner of createdPractitioners) {
+    const practitionerSpecialties = practitioner.specialtyNames || [];
+    
+    for (const specialtyName of practitionerSpecialties) {
+      const services = serviceTemplates[specialtyName as keyof typeof serviceTemplates];
+      if (services) {
+        for (const serviceTemplate of services) {
+          await storage.createService({
+            practitionerId: practitioner.id,
+            name: serviceTemplate.name,
+            description: `Professional ${specialtyName.toLowerCase()} service with ${practitioner.name}`,
+            duration: serviceTemplate.duration,
+            price: serviceTemplate.price,
+            isActive: 1
+          });
+        }
+      }
+    }
+  }
+
   console.log("Seed data initialization complete!");
   console.log(`Created ${createdSpecialties.length} specialties`);
   console.log(`Created ${createdPractitioners.length} practitioners`);
