@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Calendar, Clock, DollarSign, User, Settings, Plus, Edit, Trash2, MapPin, Star } from "lucide-react";
+import { Calendar, Clock, DollarSign, User, Settings, Plus, Edit, Trash2, MapPin, Star, Sun, Moon } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -36,6 +36,36 @@ export default function PractitionerDashboard({ user, onLogout }: PractitionerDa
   const { data: practitioner, isLoading: practitionerLoading } = useQuery<Practitioner>({
     queryKey: ["/api/practitioners/profile"],
     retry: false,
+  });
+
+  // Update practitioner profile mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: async (profileData: any) => {
+      if (!practitioner) throw new Error("No practitioner profile found");
+      return apiRequest("PUT", `/api/practitioners/${practitioner.id}`, profileData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/practitioners/profile"] });
+      toast({ title: "Profile updated successfully!", variant: "default" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Failed to update profile", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Save availability mutation
+  const saveAvailabilityMutation = useMutation({
+    mutationFn: async (availabilityData: any[]) => {
+      // Batch update availability using the authenticated endpoint
+      return apiRequest("POST", "/api/practitioners/availability", availabilityData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/practitioners/availability"] });
+      toast({ title: "Availability updated successfully!", variant: "default" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Failed to update availability", description: error.message, variant: "destructive" });
+    },
   });
 
   // Fetch practitioner services
@@ -113,7 +143,10 @@ export default function PractitionerDashboard({ user, onLogout }: PractitionerDa
                 onClick={() => setIsDark(!isDark)}
                 data-testid="button-theme-toggle"
               >
-                {isDark ? "🌞" : "🌙"}
+                {isDark ? 
+                  <Sun className="w-4 h-4" /> : 
+                  <Moon className="w-4 h-4" />
+                }
               </Button>
               <Button
                 variant="outline"
@@ -296,26 +329,28 @@ export default function PractitionerDashboard({ user, onLogout }: PractitionerDa
                     ))}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={(e) => e.preventDefault()}>
                     <div className="space-y-4">
                       <div>
                         <Label htmlFor="name">Full Name</Label>
-                        <Input id="name" defaultValue={practitioner?.name || ""} />
+                        <Input name="name" id="name" defaultValue={practitioner?.name || ""} data-testid="input-name" />
                       </div>
                       <div>
                         <Label htmlFor="title">Professional Title</Label>
-                        <Input id="title" defaultValue={practitioner?.title || ""} />
+                        <Input name="title" id="title" defaultValue={practitioner?.title || ""} data-testid="input-title" />
                       </div>
                       <div>
                         <Label htmlFor="location">Location</Label>
-                        <Input id="location" defaultValue={practitioner?.location || ""} />
+                        <Input name="location" id="location" defaultValue={practitioner?.location || ""} data-testid="input-location" />
                       </div>
                       <div>
                         <Label htmlFor="hourlyRate">Hourly Rate ($)</Label>
                         <Input 
+                          name="hourlyRate"
                           id="hourlyRate" 
                           type="number" 
                           defaultValue={practitioner ? practitioner.hourlyRate / 100 : 0} 
+                          data-testid="input-hourly-rate"
                         />
                       </div>
                     </div>
@@ -323,22 +358,48 @@ export default function PractitionerDashboard({ user, onLogout }: PractitionerDa
                       <div>
                         <Label htmlFor="bio">Bio</Label>
                         <Textarea 
+                          name="bio"
                           id="bio" 
                           rows={4} 
                           defaultValue={practitioner?.bio || ""} 
                           placeholder="Tell clients about your approach and experience..."
+                          data-testid="textarea-bio"
                         />
                       </div>
                       <div>
                         <Label htmlFor="experience">Experience</Label>
-                        <Input id="experience" defaultValue={practitioner?.experience || ""} />
+                        <Input name="experience" id="experience" defaultValue={practitioner?.experience || ""} data-testid="input-experience" />
                       </div>
                     </div>
-                  </div>
+                  </form>
                 )}
                 
-                <Button data-testid="button-save-profile">
-                  Save Profile Changes
+                <Button 
+                  data-testid="button-save-profile"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (!practitioner) return;
+                    
+                    const form = e.currentTarget.closest('form') as HTMLFormElement;
+                    if (!form) return;
+                    
+                    const formData = new FormData(form);
+                    const hourlyRateValue = formData.get('hourlyRate') as string;
+                    
+                    const profileData = {
+                      name: formData.get('name') as string,
+                      title: formData.get('title') as string,
+                      location: formData.get('location') as string,
+                      hourlyRate: parseInt(hourlyRateValue || '0') * 100, // Convert to cents
+                      bio: formData.get('bio') as string,
+                      experience: formData.get('experience') as string,
+                    };
+                    
+                    updateProfileMutation.mutate(profileData);
+                  }}
+                  disabled={updateProfileMutation.isPending}
+                >
+                  {updateProfileMutation.isPending ? "Saving..." : "Save Profile Changes"}
                 </Button>
               </CardContent>
             </Card>
@@ -398,8 +459,31 @@ export default function PractitionerDashboard({ user, onLogout }: PractitionerDa
                   </div>
                 )}
                 
-                <Button className="mt-6" data-testid="button-save-availability">
-                  Save Availability
+                <Button 
+                  className="mt-6" 
+                  data-testid="button-save-availability"
+                  onClick={() => {
+                    // Collect availability data from the form
+                    const availabilityData = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day, index) => {
+                      const dayOfWeek = (index + 1) % 7; // Convert to match database format
+                      const isActive = document.querySelector(`[data-testid="switch-${day}"]`) as HTMLInputElement;
+                      const startTime = document.querySelector(`[data-testid="time-start-${day}"]`) as HTMLInputElement;
+                      const endTime = document.querySelector(`[data-testid="time-end-${day}"]`) as HTMLInputElement;
+                      
+                      return {
+                        dayOfWeek,
+                        isActive: isActive?.checked ? 1 : 0,
+                        startTime: startTime?.value || '09:00',
+                        endTime: endTime?.value || '17:00',
+                        practitionerId: practitioner?.id || '',
+                      };
+                    }).filter(slot => slot.isActive === 1);
+                    
+                    saveAvailabilityMutation.mutate(availabilityData);
+                  }}
+                  disabled={saveAvailabilityMutation.isPending}
+                >
+                  {saveAvailabilityMutation.isPending ? "Saving..." : "Save Availability"}
                 </Button>
               </CardContent>
             </Card>

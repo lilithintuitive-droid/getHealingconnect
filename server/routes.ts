@@ -99,11 +99,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // PUT /api/practitioners/:id - Update practitioner
-  app.put("/api/practitioners/:id", async (req, res) => {
+  app.put("/api/practitioners/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const updates = insertPractitionerSchema.partial().parse(req.body);
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
       
+      if (!user) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      // Check if user has permission to update this practitioner
+      const practitioners = await storage.searchPractitioners({ email: user.email || undefined });
+      const userPractitioner = practitioners.find(p => p.id === id);
+      
+      if (!userPractitioner) {
+        return res.status(403).json({ error: "Unauthorized to update this practitioner" });
+      }
+
+      const updates = insertPractitionerSchema.partial().parse(req.body);
       const updatedPractitioner = await storage.updatePractitioner(id, updates);
       
       if (!updatedPractitioner) {
@@ -136,14 +150,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Find practitioner profile by user email or create if doesn't exist
-      const practitioners = await storage.searchPractitioners({ email: user.email });
+      const practitioners = await storage.searchPractitioners({ email: user.email || undefined });
       let practitioner = practitioners[0];
       
       if (!practitioner && user.role === "practitioner") {
         // Create basic practitioner profile if user is a practitioner but doesn't have one
         const newPractitioner = {
           name: `${user.firstName} ${user.lastName}`,
-          email: user.email,
+          email: user.email || "",
           bio: "Update your bio to attract more clients",
           title: "Practitioner",
           location: "Update your location",
@@ -153,7 +167,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           imageUrl: user.profileImageUrl || "",
           phone: ""
         };
-        practitioner = await storage.createPractitioner(newPractitioner);
+        const basicPractitioner = await storage.createPractitioner(newPractitioner);
+        // Fetch the created practitioner with specialties and availability
+        const updatedPractitioners = await storage.searchPractitioners({ email: user.email || undefined });
+        practitioner = updatedPractitioners[0];
       }
       
       res.json(practitioner);
@@ -174,7 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Find practitioner by email
-      const practitioners = await storage.searchPractitioners({ email: user.email });
+      const practitioners = await storage.searchPractitioners({ email: user.email || undefined });
       const practitioner = practitioners[0];
       
       if (!practitioner) {
@@ -200,7 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Find practitioner by email
-      const practitioners = await storage.searchPractitioners({ email: user.email });
+      const practitioners = await storage.searchPractitioners({ email: user.email || undefined });
       const practitioner = practitioners[0];
       
       if (!practitioner) {
@@ -226,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Find practitioner by email
-      const practitioners = await storage.searchPractitioners({ email: user.email });
+      const practitioners = await storage.searchPractitioners({ email: user.email || undefined });
       const practitioner = practitioners[0];
       
       if (!practitioner) {
@@ -238,6 +255,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching practitioner availability:", error);
       res.status(500).json({ error: "Failed to fetch practitioner availability" });
+    }
+  });
+
+  // POST /api/practitioners/availability - Save authenticated practitioner's availability
+  app.post("/api/practitioners/availability", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Find practitioner by email
+      const practitioners = await storage.searchPractitioners({ email: user.email || undefined });
+      const practitioner = practitioners[0];
+      
+      if (!practitioner) {
+        return res.status(404).json({ error: "Practitioner profile not found" });
+      }
+
+      const availabilityData = req.body;
+      
+      if (!Array.isArray(availabilityData)) {
+        return res.status(400).json({ error: "Availability data must be an array" });
+      }
+
+      // Clear existing availability and add new slots
+      const existingAvailability = await storage.getAvailability(practitioner.id);
+      await Promise.all(existingAvailability.map(slot => storage.removeAvailability(slot.id)));
+      
+      // Add new availability slots
+      const newSlots = await Promise.all(
+        availabilityData.map(slot => 
+          storage.setAvailability({ ...slot, practitionerId: practitioner.id })
+        )
+      );
+
+      res.json(newSlots);
+    } catch (error) {
+      console.error("Error saving practitioner availability:", error);
+      res.status(500).json({ error: "Failed to save practitioner availability" });
     }
   });
 
