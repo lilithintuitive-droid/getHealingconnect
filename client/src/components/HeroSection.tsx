@@ -27,9 +27,9 @@ export default function HeroSection() {
 
       {/* Content */}
       <header className="relative z-10 text-center max-w-4xl px-6">
-        <h1 className="text-4xl md:text-6xl font-serif text-white mb-6 leading-tight">
+        <h1 className="text-3xl sm:text-4xl md:text-6xl font-serif text-white mb-6 leading-tight">
           Experience the Art of
-          <span className="text-accent block mt-2">Sacred Healing</span>
+          <span className="text-accent block mt-2 text-3xl sm:text-4xl md:text-6xl">Sacred Healing</span>
         </h1>
         <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
           Connect with certified holistic practitioners who honor the sacred nature of healing. 
