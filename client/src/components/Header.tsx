@@ -43,7 +43,7 @@ export default function Header({ isDark, onThemeToggle }: HeaderProps) {
                 />
               </div>
               <Select value={location} onValueChange={setLocation}>
-                <SelectTrigger className="w-40" data-testid="select-location">
+                <SelectTrigger className="w-32 sm:w-40" data-testid="select-location">
                   <MapPin className="w-4 h-4 mr-2" />
                   <SelectValue placeholder="Location" />
                 </SelectTrigger>

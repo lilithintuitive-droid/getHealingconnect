@@ -26,7 +26,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <Header isDark={isDark} onThemeToggle={() => setIsDark(!isDark)} />
       
       <div className="pt-16">
