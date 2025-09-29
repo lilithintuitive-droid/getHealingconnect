@@ -94,12 +94,12 @@ export default function Contact() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="db-theme min-h-screen bg-background">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-2xl mx-auto text-center">
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-primary" />
               </div>
             </div>
             <h1 className="text-3xl font-bold text-foreground mb-4">Thank You!</h1>
@@ -120,7 +120,7 @@ export default function Contact() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="db-theme min-h-screen bg-background">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-6xl mx-auto">
           {/* Header */}

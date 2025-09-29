@@ -33,7 +33,7 @@ export default function Home() {
     injectDancingButterflyStructuredData(structuredData);
   }, []);
   return (
-    <div className="min-h-screen bg-background">
+    <div className="db-theme min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative py-24 px-4 bg-gradient-to-br from-background via-background to-muted/30">
         <div className="container mx-auto max-w-6xl">
@@ -58,15 +58,15 @@ export default function Home() {
               {/* Key Stats */}
               <div className="flex flex-wrap gap-6">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
                   <span className="text-sm font-medium">50+ Projects Delivered</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
                   <span className="text-sm font-medium">100% Client Satisfaction</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
                   <span className="text-sm font-medium">Remote Worldwide</span>
                 </div>
               </div>
