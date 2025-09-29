@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import express from "express";
+import path from "path";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import {
   insertPractitionerSchema,
@@ -573,8 +575,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Dancing Butterfly business website endpoints
 
-  // POST /api/leads - Lead capture endpoint
-  app.post("/api/leads", async (req, res) => {
+  // Dancing Butterfly routes - accessible at /dancing-butterfly/*
+  app.use('/dancing-butterfly', express.static('./dancing-butterfly-app/client/dist'));
+  
+  // POST /dancing-butterfly/api/leads - Lead capture endpoint
+  app.post("/dancing-butterfly/api/leads", async (req, res) => {
     try {
       const validatedData = insertLeadSchema.parse(req.body);
       const lead = await storage.createLead(validatedData);
@@ -591,8 +596,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/testimonials - Get visible testimonials
-  app.get("/api/testimonials", async (req, res) => {
+  // GET /dancing-butterfly/api/testimonials - Get visible testimonials
+  app.get("/dancing-butterfly/api/testimonials", async (req, res) => {
     try {
       const testimonials = await storage.getVisibleTestimonials();
       res.json(testimonials);
@@ -602,8 +607,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/case-studies - Get visible case studies
-  app.get("/api/case-studies", async (req, res) => {
+  // GET /dancing-butterfly/api/case-studies - Get visible case studies
+  app.get("/dancing-butterfly/api/case-studies", async (req, res) => {
     try {
       const { featured } = req.query;
       const caseStudies = featured === 'true' 
@@ -616,8 +621,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/case-studies/:slug - Get case study by slug
-  app.get("/api/case-studies/:slug", async (req, res) => {
+  // GET /dancing-butterfly/api/case-studies/:slug - Get case study by slug
+  app.get("/dancing-butterfly/api/case-studies/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
       const caseStudy = await storage.getCaseStudyBySlug(slug);
@@ -633,8 +638,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/service-packages - Get active service packages
-  app.get("/api/service-packages", async (req, res) => {
+  // GET /dancing-butterfly/api/service-packages - Get active service packages
+  app.get("/dancing-butterfly/api/service-packages", async (req, res) => {
     try {
       const servicePackages = await storage.getActiveServicePackages();
       res.json(servicePackages);
@@ -642,6 +647,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error fetching service packages:", error);
       res.status(500).json({ error: "Failed to fetch service packages" });
     }
+  });
+
+  // Serve Dancing Butterfly index.html for all Dancing Butterfly routes
+  app.get('/dancing-butterfly*', (req, res) => {
+    res.sendFile(path.resolve('./dancing-butterfly-app/client/dist/index.html'));
   });
 
   const httpServer = createServer(app);
