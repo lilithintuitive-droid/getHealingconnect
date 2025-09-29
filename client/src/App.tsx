@@ -328,7 +328,6 @@ function HomePage() {
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
 
-  // Dancing Butterfly business website routes (public, no authentication required)
   return (
     <Switch>
       {/* HealingConnect routes - Main application */}
