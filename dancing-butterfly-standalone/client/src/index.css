@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fix horizontal scroll on mobile */
+html {
+  overflow-x: hidden;
+}
+body {
+  overflow-x: hidden;
+}
+
+/* LIGHT MODE */
+:root {
+  --button-outline: rgba(0,0,0, .10);
+  --badge-outline: rgba(0,0,0, .05);
+
+  /* Automatic computation of border around primary / danger buttons */
+  --opaque-button-border-intensity: -8; /* In terms of percentages */
+
+  /* Backgrounds applied on top of other backgrounds when hovered/active */
+  --elevate-1: rgba(0,0,0, .03);
+  --elevate-2: rgba(0,0,0, .08);
+
+  --background: 220 2% 98%;
+  --foreground: 220 6% 18%;
+  --border: 220 8% 88%;
+  --card: 220 3% 96%;
+  --card-foreground: 220 6% 20%;
+  --card-border: 220 8% 90%;
+  --popover: 220 5% 92%;
+  --popover-foreground: 220 7% 24%;
+  --popover-border: 220 8% 84%;
+
+  /* Dancing Butterfly Greyscale Theme */
+  --primary: 220 5% 20%;
+  --primary-foreground: 220 10% 98%;
+  --secondary: 220 4% 90%;
+  --secondary-foreground: 220 6% 24%;
+  --muted: 220 8% 88%;
+  --muted-foreground: 220 25% 40%;
+  --accent: 220 3% 94%;
+  --accent-foreground: 220 7% 22%;
+  --destructive: 0 72% 45%;
+  --destructive-foreground: 0 15% 98%;
+  --input: 220 15% 75%;
+  --ring: 220 5% 20%;
+
+  --font-sans: Inter, sans-serif;
+  --font-serif: Crimson Text, serif;
+  --radius: .5rem;
+
+  /* Automatically computed borders */
+  --primary-border: hsl(var(--primary));
+  --secondary-border: hsl(var(--secondary));
+  --muted-border: hsl(var(--muted));
+  --accent-border: hsl(var(--accent));
+  --destructive-border: hsl(var(--destructive));
+}
+
+/* DARK MODE */
+.dark {
+  --button-outline: rgba(255,255,255, .10);
+  --badge-outline: rgba(255,255,255, .05);
+  --opaque-button-border-intensity: 9;
+  --elevate-1: rgba(255,255,255, .04);
+  --elevate-2: rgba(255,255,255, .09);
+
+  --background: 220 3% 8%;
+  --foreground: 220 8% 92%;
+  --border: 220 12% 18%;
+  --card: 220 4% 12%;
+  --card-foreground: 220 8% 88%;
+  --card-border: 220 12% 22%;
+  --popover: 220 6% 14%;
+  --popover-foreground: 220 8% 82%;
+  --popover-border: 220 12% 24%;
+
+  /* Dancing Butterfly Dark Mode Greyscale */
+  --primary: 220 6% 82%;
+  --primary-foreground: 220 8% 12%;
+  --secondary: 220 6% 18%;
+  --secondary-foreground: 220 8% 88%;
+  --muted: 220 10% 12%;
+  --muted-foreground: 220 15% 65%;
+  --accent: 220 5% 16%;
+  --accent-foreground: 220 8% 88%;
+  --destructive: 0 62% 35%;
+  --destructive-foreground: 0 10% 95%;
+  --input: 220 20% 25%;
+  --ring: 220 6% 82%;
+}
+
+/* Interactive elevation utilities */
+.hover-elevate {
+  transition: all 0.15s ease-in-out;
+}
+
+.hover-elevate:hover {
+  background-color: hsl(var(--background));
+  background-image: var(--elevate-1);
+}
+
+.active-elevate-2:active {
+  background-image: var(--elevate-2);
+}
+
+/* Base layer styles */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
