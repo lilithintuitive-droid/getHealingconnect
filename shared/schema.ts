@@ -164,8 +164,110 @@ export type Service = typeof services.$inferSelect;
 export type InsertBooking = z.infer<typeof insertBookingSchema>;
 export type Booking = typeof bookings.$inferSelect;
 
+// Dancing Butterfly business website types
+export type InsertLead = z.infer<typeof insertLeadSchema>;
+export type Lead = typeof leads.$inferSelect;
+
+export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
+export type Testimonial = typeof testimonials.$inferSelect;
+
+export type InsertCaseStudy = z.infer<typeof insertCaseStudySchema>;
+export type CaseStudy = typeof caseStudies.$inferSelect;
+
+export type InsertServicePackage = z.infer<typeof insertServicePackageSchema>;
+export type ServicePackage = typeof servicePackages.$inferSelect;
+
 // Extended types for API responses
 export type PractitionerWithSpecialties = Practitioner & {
   specialties: Specialty[];
   availability: Availability[];
 };
+
+// Dancing Butterfly business website tables
+export const leads = pgTable("leads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  company: text("company"),
+  budgetRange: text("budget_range"), // e.g., "$1500-2000", "$2000-3500"
+  timeline: text("timeline"), // e.g., "1-2 weeks", "1 month", "flexible"
+  message: text("message").notNull(),
+  status: text("status").notNull().default("new"), // new, contacted, qualified, converted
+  source: text("source").default("website"), // website, fiverr, upwork
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const testimonials = pgTable("testimonials", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  role: text("role"), // e.g., "CEO", "Founder", "Marketing Director"
+  company: text("company"),
+  content: text("content").notNull(),
+  rating: integer("rating").default(5), // 1-5 star rating
+  avatarUrl: text("avatar_url"),
+  projectType: text("project_type"), // e.g., "MVP Development", "E-commerce Site"
+  isVisible: integer("is_visible").default(1), // 1 for visible, 0 for hidden
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const caseStudies = pgTable("case_studies", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  slug: text("slug").notNull().unique(), // URL slug like "healing-connect"
+  title: text("title").notNull(),
+  summary: text("summary").notNull(), // short description for cards/previews
+  problem: text("problem").notNull(), // problem statement
+  solution: text("solution").notNull(), // how it was solved
+  results: text("results").array(), // array of key results/outcomes
+  techStack: text("tech_stack").array(), // array of technologies used
+  images: text("images").array(), // array of image URLs
+  clientName: text("client_name"),
+  projectDuration: text("project_duration"), // e.g., "3 months", "6 weeks"
+  budgetRange: text("budget_range"), // e.g., "$2500", "$1500-2000"
+  liveUrl: text("live_url"), // URL to live project
+  githubUrl: text("github_url"), // URL to GitHub repo if public
+  isFeatured: integer("is_featured").default(0), // 1 for featured case studies
+  isVisible: integer("is_visible").default(1), // 1 for visible, 0 for hidden
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const servicePackages = pgTable("service_packages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(), // e.g., "Quick Fix", "Complete Package", "Premium MVP"
+  summary: text("summary").notNull(), // brief description
+  description: text("description"), // detailed description
+  priceRange: text("price_range").notNull(), // e.g., "$25-150", "$800-2000"
+  deliverables: text("deliverables").array(), // array of what's included
+  timeline: text("timeline"), // typical delivery time
+  idealFor: text("ideal_for"), // who this package is for
+  isPopular: integer("is_popular").default(0), // 1 for popular badge
+  displayOrder: integer("display_order").default(0), // for ordering packages
+  isActive: integer("is_active").default(1), // 1 for active, 0 for hidden
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Dancing Butterfly business website schemas (after table definitions)
+export const insertLeadSchema = createInsertSchema(leads).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  email: z.string().email(),
+});
+
+export const insertTestimonialSchema = createInsertSchema(testimonials).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  rating: z.number().int().min(1).max(5).optional(),
+});
+
+export const insertCaseStudySchema = createInsertSchema(caseStudies).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertServicePackageSchema = createInsertSchema(servicePackages).omit({
+  id: true,
+  createdAt: true,
+});
