@@ -8,7 +8,12 @@ import {
   insertAvailabilitySchema,
   insertPractitionerSpecialtySchema,
   insertServiceSchema,
-  insertBookingSchema
+  insertBookingSchema,
+  // Dancing Butterfly business website schemas
+  insertLeadSchema,
+  insertTestimonialSchema,
+  insertCaseStudySchema,
+  insertServicePackageSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -563,6 +568,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error cancelling booking:", error);
       res.status(500).json({ error: "Failed to cancel booking" });
+    }
+  });
+
+  // Dancing Butterfly business website endpoints
+
+  // POST /api/leads - Lead capture endpoint
+  app.post("/api/leads", async (req, res) => {
+    try {
+      const validatedData = insertLeadSchema.parse(req.body);
+      const lead = await storage.createLead(validatedData);
+      res.status(201).json(lead);
+    } catch (error) {
+      console.error("Error creating lead:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: error.errors 
+        });
+      }
+      res.status(500).json({ error: "Failed to create lead" });
+    }
+  });
+
+  // GET /api/testimonials - Get visible testimonials
+  app.get("/api/testimonials", async (req, res) => {
+    try {
+      const testimonials = await storage.getVisibleTestimonials();
+      res.json(testimonials);
+    } catch (error) {
+      console.error("Error fetching testimonials:", error);
+      res.status(500).json({ error: "Failed to fetch testimonials" });
+    }
+  });
+
+  // GET /api/case-studies - Get visible case studies
+  app.get("/api/case-studies", async (req, res) => {
+    try {
+      const { featured } = req.query;
+      const caseStudies = featured === 'true' 
+        ? await storage.getFeaturedCaseStudies()
+        : await storage.getVisibleCaseStudies();
+      res.json(caseStudies);
+    } catch (error) {
+      console.error("Error fetching case studies:", error);
+      res.status(500).json({ error: "Failed to fetch case studies" });
+    }
+  });
+
+  // GET /api/case-studies/:slug - Get case study by slug
+  app.get("/api/case-studies/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const caseStudy = await storage.getCaseStudyBySlug(slug);
+      
+      if (!caseStudy) {
+        return res.status(404).json({ error: "Case study not found" });
+      }
+
+      res.json(caseStudy);
+    } catch (error) {
+      console.error("Error fetching case study:", error);
+      res.status(500).json({ error: "Failed to fetch case study" });
+    }
+  });
+
+  // GET /api/service-packages - Get active service packages
+  app.get("/api/service-packages", async (req, res) => {
+    try {
+      const servicePackages = await storage.getActiveServicePackages();
+      res.json(servicePackages);
+    } catch (error) {
+      console.error("Error fetching service packages:", error);
+      res.status(500).json({ error: "Failed to fetch service packages" });
     }
   });
 

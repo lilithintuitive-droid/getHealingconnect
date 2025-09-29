@@ -15,6 +15,15 @@ import {
   type Booking,
   type InsertBooking,
   type PractitionerWithSpecialties,
+  // Dancing Butterfly business website types
+  type Lead,
+  type InsertLead,
+  type Testimonial,
+  type InsertTestimonial,
+  type CaseStudy,
+  type InsertCaseStudy,
+  type ServicePackage,
+  type InsertServicePackage,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -68,6 +77,33 @@ export interface IStorage {
   createBooking(booking: InsertBooking): Promise<Booking>;
   updateBooking(id: string, booking: Partial<InsertBooking>): Promise<Booking | undefined>;
   cancelBooking(id: string): Promise<boolean>;
+
+  // Dancing Butterfly business website methods
+  // Lead methods
+  createLead(lead: InsertLead): Promise<Lead>;
+  getLeads(): Promise<Lead[]>;
+  getLead(id: string): Promise<Lead | undefined>;
+  updateLeadStatus(id: string, status: string): Promise<Lead | undefined>;
+
+  // Testimonial methods
+  getAllTestimonials(): Promise<Testimonial[]>;
+  getVisibleTestimonials(): Promise<Testimonial[]>;
+  getTestimonial(id: string): Promise<Testimonial | undefined>;
+  createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
+
+  // Case Study methods
+  getAllCaseStudies(): Promise<CaseStudy[]>;
+  getVisibleCaseStudies(): Promise<CaseStudy[]>;
+  getFeaturedCaseStudies(): Promise<CaseStudy[]>;
+  getCaseStudy(id: string): Promise<CaseStudy | undefined>;
+  getCaseStudyBySlug(slug: string): Promise<CaseStudy | undefined>;
+  createCaseStudy(caseStudy: InsertCaseStudy): Promise<CaseStudy>;
+
+  // Service Package methods
+  getAllServicePackages(): Promise<ServicePackage[]>;
+  getActiveServicePackages(): Promise<ServicePackage[]>;
+  getServicePackage(id: string): Promise<ServicePackage | undefined>;
+  createServicePackage(servicePackage: InsertServicePackage): Promise<ServicePackage>;
 }
 
 export class MemStorage implements IStorage {
@@ -78,6 +114,11 @@ export class MemStorage implements IStorage {
   private availability: Map<string, Availability>;
   private services: Map<string, Service>;
   private bookings: Map<string, Booking>;
+  // Dancing Butterfly business website maps
+  private leads: Map<string, Lead>;
+  private testimonials: Map<string, Testimonial>;
+  private caseStudies: Map<string, CaseStudy>;
+  private servicePackages: Map<string, ServicePackage>;
 
   constructor() {
     this.users = new Map();
@@ -87,6 +128,11 @@ export class MemStorage implements IStorage {
     this.availability = new Map();
     this.services = new Map();
     this.bookings = new Map();
+    // Dancing Butterfly business website maps
+    this.leads = new Map();
+    this.testimonials = new Map();
+    this.caseStudies = new Map();
+    this.servicePackages = new Map();
   }
 
   // User methods
@@ -526,6 +572,169 @@ export class MemStorage implements IStorage {
     booking.updatedAt = new Date();
     this.bookings.set(id, booking);
     return true;
+  }
+
+  // Dancing Butterfly business website methods
+  
+  // Lead methods
+  async createLead(insertLead: InsertLead): Promise<Lead> {
+    const id = randomUUID();
+    const lead: Lead = {
+      ...insertLead,
+      id,
+      company: insertLead.company ?? null,
+      budgetRange: insertLead.budgetRange ?? null,
+      timeline: insertLead.timeline ?? null,
+      status: insertLead.status ?? "new",
+      source: insertLead.source ?? "website",
+      createdAt: new Date(),
+    };
+    this.leads.set(id, lead);
+    return lead;
+  }
+
+  async getLeads(): Promise<Lead[]> {
+    return Array.from(this.leads.values()).sort(
+      (a, b) => b.createdAt!.getTime() - a.createdAt!.getTime()
+    );
+  }
+
+  async getLead(id: string): Promise<Lead | undefined> {
+    return this.leads.get(id);
+  }
+
+  async updateLeadStatus(id: string, status: string): Promise<Lead | undefined> {
+    const lead = this.leads.get(id);
+    if (!lead) {
+      return undefined;
+    }
+
+    const updatedLead: Lead = {
+      ...lead,
+      status,
+    };
+    this.leads.set(id, updatedLead);
+    return updatedLead;
+  }
+
+  // Testimonial methods
+  async getAllTestimonials(): Promise<Testimonial[]> {
+    return Array.from(this.testimonials.values()).sort(
+      (a, b) => b.createdAt!.getTime() - a.createdAt!.getTime()
+    );
+  }
+
+  async getVisibleTestimonials(): Promise<Testimonial[]> {
+    return Array.from(this.testimonials.values())
+      .filter(testimonial => testimonial.isVisible === 1)
+      .sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
+  }
+
+  async getTestimonial(id: string): Promise<Testimonial | undefined> {
+    return this.testimonials.get(id);
+  }
+
+  async createTestimonial(insertTestimonial: InsertTestimonial): Promise<Testimonial> {
+    const id = randomUUID();
+    const testimonial: Testimonial = {
+      ...insertTestimonial,
+      id,
+      role: insertTestimonial.role ?? null,
+      company: insertTestimonial.company ?? null,
+      rating: insertTestimonial.rating ?? 5,
+      avatarUrl: insertTestimonial.avatarUrl ?? null,
+      projectType: insertTestimonial.projectType ?? null,
+      isVisible: insertTestimonial.isVisible ?? 1,
+      createdAt: new Date(),
+    };
+    this.testimonials.set(id, testimonial);
+    return testimonial;
+  }
+
+  // Case Study methods
+  async getAllCaseStudies(): Promise<CaseStudy[]> {
+    return Array.from(this.caseStudies.values()).sort(
+      (a, b) => b.createdAt!.getTime() - a.createdAt!.getTime()
+    );
+  }
+
+  async getVisibleCaseStudies(): Promise<CaseStudy[]> {
+    return Array.from(this.caseStudies.values())
+      .filter(caseStudy => caseStudy.isVisible === 1)
+      .sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
+  }
+
+  async getFeaturedCaseStudies(): Promise<CaseStudy[]> {
+    return Array.from(this.caseStudies.values())
+      .filter(caseStudy => caseStudy.isVisible === 1 && caseStudy.isFeatured === 1)
+      .sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
+  }
+
+  async getCaseStudy(id: string): Promise<CaseStudy | undefined> {
+    return this.caseStudies.get(id);
+  }
+
+  async getCaseStudyBySlug(slug: string): Promise<CaseStudy | undefined> {
+    return Array.from(this.caseStudies.values()).find(
+      caseStudy => caseStudy.slug === slug && caseStudy.isVisible === 1
+    );
+  }
+
+  async createCaseStudy(insertCaseStudy: InsertCaseStudy): Promise<CaseStudy> {
+    const id = randomUUID();
+    const caseStudy: CaseStudy = {
+      ...insertCaseStudy,
+      id,
+      results: insertCaseStudy.results ?? [],
+      techStack: insertCaseStudy.techStack ?? [],
+      images: insertCaseStudy.images ?? [],
+      clientName: insertCaseStudy.clientName ?? null,
+      projectDuration: insertCaseStudy.projectDuration ?? null,
+      budgetRange: insertCaseStudy.budgetRange ?? null,
+      liveUrl: insertCaseStudy.liveUrl ?? null,
+      githubUrl: insertCaseStudy.githubUrl ?? null,
+      isFeatured: insertCaseStudy.isFeatured ?? 0,
+      isVisible: insertCaseStudy.isVisible ?? 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.caseStudies.set(id, caseStudy);
+    return caseStudy;
+  }
+
+  // Service Package methods
+  async getAllServicePackages(): Promise<ServicePackage[]> {
+    return Array.from(this.servicePackages.values()).sort(
+      (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
+    );
+  }
+
+  async getActiveServicePackages(): Promise<ServicePackage[]> {
+    return Array.from(this.servicePackages.values())
+      .filter(servicePackage => servicePackage.isActive === 1)
+      .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+  }
+
+  async getServicePackage(id: string): Promise<ServicePackage | undefined> {
+    return this.servicePackages.get(id);
+  }
+
+  async createServicePackage(insertServicePackage: InsertServicePackage): Promise<ServicePackage> {
+    const id = randomUUID();
+    const servicePackage: ServicePackage = {
+      ...insertServicePackage,
+      id,
+      description: insertServicePackage.description ?? null,
+      deliverables: insertServicePackage.deliverables ?? [],
+      timeline: insertServicePackage.timeline ?? null,
+      idealFor: insertServicePackage.idealFor ?? null,
+      isPopular: insertServicePackage.isPopular ?? 0,
+      displayOrder: insertServicePackage.displayOrder ?? 0,
+      isActive: insertServicePackage.isActive ?? 1,
+      createdAt: new Date(),
+    };
+    this.servicePackages.set(id, servicePackage);
+    return servicePackage;
   }
 }
 
