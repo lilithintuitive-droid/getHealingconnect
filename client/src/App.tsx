@@ -331,10 +331,6 @@ function Router() {
   // Dancing Butterfly business website routes (public, no authentication required)
   return (
     <Switch>
-      {/* Dancing Butterfly Business Website */}
-      <Route path="/dancing-butterfly" component={Home} />
-      <Route path="/dancing-butterfly/contact" component={Contact} />
-      
       {/* HealingConnect routes - Main application */}
       <Route path="/">
         {() => {

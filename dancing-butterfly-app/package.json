@@ -4,9 +4,9 @@
   "description": "Dancing Butterfly - Premium Web Development Services",
   "main": "server/index.js",
   "scripts": {
-    "dev": "NODE_ENV=development tsx server/index.ts",
-    "build": "tsc && vite build",
-    "start": "node server/index.js",
+    "dev": "concurrently \"vite --host 0.0.0.0 --port 3000\" \"NODE_ENV=development tsx server/index.ts\"",
+    "build": "vite build && tsc",
+    "start": "NODE_ENV=production tsx server/index.ts",
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
