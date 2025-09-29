@@ -4,36 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, CheckCircle, Code, Zap, Users, Award, Star, ExternalLink } from "lucide-react";
 import { Link } from "wouter";
-import {
-  generateHomePageMetaTags,
-  updateDancingButterflyMetaTags,
-  injectDancingButterflyStructuredData,
-  generateOrganizationStructuredData,
-  generateWebSiteStructuredData,
-  generateServiceStructuredData,
-  generatePersonStructuredData
-} from "@/lib/dancingbutterfly-seo";
 
 export default function Home() {
-  // SEO optimization on component mount
-  useEffect(() => {
-    // Update meta tags for home page
-    const metaTags = generateHomePageMetaTags();
-    updateDancingButterflyMetaTags(metaTags);
-
-    // Inject structured data for maximum SEO benefit
-    const structuredData = [
-      generateOrganizationStructuredData(),
-      generateWebSiteStructuredData(), 
-      generateServiceStructuredData(),
-      generatePersonStructuredData()
-    ];
-
-    // Inject all structured data as a single script
-    injectDancingButterflyStructuredData(structuredData);
-  }, []);
   return (
-    <div className="db-theme min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative py-24 px-4 bg-gradient-to-br from-background via-background to-muted/30">
         <div className="container mx-auto max-w-6xl">
