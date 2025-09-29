@@ -252,9 +252,15 @@ function HomePage() {
             {/* Filter Sidebar */}
             <div className="lg:w-80 flex-shrink-0">
               <FilterSidebar 
-                onApplyFilters={handleApplyFilters}
-                onSearchChange={setSearchTerm}
-                searchTerm={searchTerm}
+                filters={filters}
+                onFiltersChange={setFilters}
+                onClearFilters={() => setFilters({
+                  specialties: [],
+                  location: "",
+                  priceRange: [0, 500],
+                  availability: "",
+                  rating: 0,
+                })}
               />
             </div>
             
@@ -303,9 +309,12 @@ function HomePage() {
 
       {selectedPractitioner && showProfile && (
         <PractitionerProfile
-          isOpen={showProfile}
-          onClose={() => setShowProfile(false)}
-          practitioner={selectedPractitioner}
+          practitioner={{
+            ...selectedPractitioner,
+            bio: selectedPractitioner.bio || '',
+            experience: selectedPractitioner.experience || ''
+          }}
+          reviews={[]}
           onBookAppointment={() => {
             setShowProfile(false);
             setShowBookingModal(true);
