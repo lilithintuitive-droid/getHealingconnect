@@ -1,11 +1,98 @@
-import { pgTable, varchar, text, integer, timestamp, serial } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import { pgTable, text, varchar, integer, decimal, timestamp, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Dancing Butterfly business website tables
+// Session storage table for Replit Auth
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
 
-// Leads table - for contact form submissions and potential clients
+// User storage table for Replit Auth
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  role: text("role").notNull().default("client"), // client or practitioner
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const specialties = pgTable("specialties", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  category: text("category"), // e.g., "Traditional Medicine", "Massage Therapy", "Energy Healing"
+});
+
+export const practitioners = pgTable("practitioners", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id),
+  name: text("name").notNull(),
+  title: text("title").notNull(),
+  bio: text("bio"),
+  experience: text("experience"), // e.g., "15+ years experience"
+  location: text("location").notNull(), // city, state format
+  hourlyRate: integer("hourly_rate").notNull(), // in cents to avoid decimal issues
+  imageUrl: text("image_url"),
+  languages: text("languages").array(), // array of languages spoken
+  education: text("education").array(), // array of education credentials
+  certifications: text("certifications").array(), // array of certifications
+  rating: decimal("rating", { precision: 3, scale: 2 }).default("0.00"),
+  reviewCount: integer("review_count").default(0),
+  isActive: integer("is_active").default(1), // 1 for active, 0 for inactive
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const practitionerSpecialties = pgTable("practitioner_specialties", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  practitionerId: varchar("practitioner_id").notNull().references(() => practitioners.id),
+  specialtyId: varchar("specialty_id").notNull().references(() => specialties.id),
+});
+
+export const availability = pgTable("availability", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  practitionerId: varchar("practitioner_id").notNull().references(() => practitioners.id),
+  dayOfWeek: integer("day_of_week").notNull(), // 0-6, Sunday = 0
+  startTime: text("start_time").notNull(), // HH:MM format
+  endTime: text("end_time").notNull(), // HH:MM format
+  isActive: integer("is_active").default(1),
+});
+
+export const services = pgTable("services", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  practitionerId: varchar("practitioner_id").notNull().references(() => practitioners.id),
+  name: text("name").notNull(), // e.g., "Initial Consultation", "Follow-up Session"
+  description: text("description"),
+  duration: integer("duration").notNull(), // duration in minutes
+  price: integer("price").notNull(), // price in cents
+  isActive: integer("is_active").default(1),
+});
+
+export const bookings = pgTable("bookings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clientId: varchar("client_id").notNull().references(() => users.id),
+  practitionerId: varchar("practitioner_id").notNull().references(() => practitioners.id),
+  serviceId: varchar("service_id").notNull().references(() => services.id),
+  appointmentDate: timestamp("appointment_date").notNull(),
+  duration: integer("duration").notNull(), // duration in minutes
+  totalPrice: integer("total_price").notNull(), // total price in cents
+  status: text("status").notNull().default("pending"), // pending, confirmed, completed, cancelled
+  notes: text("notes"), // client notes or special requests
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Dancing Butterfly business website tables (for when we create separate Repl)
 export const leads = pgTable("leads", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -19,7 +106,6 @@ export const leads = pgTable("leads", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Testimonials table - client reviews and feedback
 export const testimonials = pgTable("testimonials", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -33,7 +119,6 @@ export const testimonials = pgTable("testimonials", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Case Studies table - detailed project showcases
 export const caseStudies = pgTable("case_studies", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
@@ -55,7 +140,6 @@ export const caseStudies = pgTable("case_studies", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Service Packages table - pricing tiers and offerings
 export const servicePackages = pgTable("service_packages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -70,7 +154,46 @@ export const servicePackages = pgTable("service_packages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Insert schemas with enhanced validation
+// HealingConnect insert schemas
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const upsertUserSchema = insertUserSchema.extend({
+  id: z.string(),
+});
+
+export const insertPractitionerSchema = createInsertSchema(practitioners).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSpecialtySchema = createInsertSchema(specialties).omit({
+  id: true,
+});
+
+export const insertPractitionerSpecialtySchema = createInsertSchema(practitionerSpecialties).omit({
+  id: true,
+});
+
+export const insertAvailabilitySchema = createInsertSchema(availability).omit({
+  id: true,
+});
+
+export const insertServiceSchema = createInsertSchema(services).omit({
+  id: true,
+});
+
+export const insertBookingSchema = createInsertSchema(bookings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Dancing Butterfly insert schemas  
 export const insertLeadSchema = createInsertSchema(leads).omit({
   id: true,
   createdAt: true,
@@ -99,7 +222,35 @@ export const insertServicePackageSchema = createInsertSchema(servicePackages).om
   createdAt: true,
 });
 
-// Types
+// HealingConnect types
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpsertUser = z.infer<typeof upsertUserSchema>;
+export type User = typeof users.$inferSelect;
+
+export type InsertPractitioner = z.infer<typeof insertPractitionerSchema>;
+export type Practitioner = typeof practitioners.$inferSelect;
+
+export type InsertSpecialty = z.infer<typeof insertSpecialtySchema>;
+export type Specialty = typeof specialties.$inferSelect;
+
+export type InsertPractitionerSpecialty = z.infer<typeof insertPractitionerSpecialtySchema>;
+export type PractitionerSpecialty = typeof practitionerSpecialties.$inferSelect;
+
+export type InsertAvailability = z.infer<typeof insertAvailabilitySchema>;
+export type Availability = typeof availability.$inferSelect;
+
+export type InsertService = z.infer<typeof insertServiceSchema>;
+export type Service = typeof services.$inferSelect;
+
+export type InsertBooking = z.infer<typeof insertBookingSchema>;
+export type Booking = typeof bookings.$inferSelect;
+
+// Extended practitioner type with specialties
+export type PractitionerWithSpecialties = Practitioner & {
+  specialties: Specialty[];
+};
+
+// Dancing Butterfly types
 export type InsertLead = z.infer<typeof insertLeadSchema>;
 export type Lead = typeof leads.$inferSelect;
 
