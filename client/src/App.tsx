@@ -39,6 +39,8 @@ import BookingModal from "@/components/BookingModal";
 import PractitionerProfile from "@/components/PractitionerProfile";
 import LandingPage from "./components/LandingPage";
 import PractitionerDashboard from "./components/PractitionerDashboard";
+import Contact from "./pages/Contact";
+import NotFound from "./pages/not-found";
 
 function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -295,36 +297,37 @@ function HomePage() {
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
 
-  // Show landing page if not authenticated or loading
-  if (isLoading || !isAuthenticated) {
-    return (
-      <Switch>
-        <Route path="/" component={LandingPage} />
-        <Route component={LandingPage} />
-      </Switch>
-    );
-  }
-
-  // Handle logout
-  const handleLogout = () => {
-    window.location.href = "/api/logout";
-  };
-
-  // Show practitioner dashboard if user is a practitioner
-  if (user?.role === "practitioner") {
-    return (
-      <Switch>
-        <Route path="/" component={() => <PractitionerDashboard user={user} onLogout={handleLogout} />} />
-        <Route component={() => <PractitionerDashboard user={user} onLogout={handleLogout} />} />
-      </Switch>
-    );
-  }
-
-  // Show client interface for regular users
+  // Dancing Butterfly business website routes (public, no authentication required)
   return (
     <Switch>
-      <Route path="/" component={HomePage} />
-      <Route component={HomePage} />
+      <Route path="/contact" component={Contact} />
+      
+      {/* HealingConnect routes */}
+      <Route path="/healingconnect">
+        {() => {
+          // Show landing page if not authenticated or loading
+          if (isLoading || !isAuthenticated) {
+            return <LandingPage />;
+          }
+
+          // Handle logout
+          const handleLogout = () => {
+            window.location.href = "/api/logout";
+          };
+
+          // Show practitioner dashboard if user is a practitioner
+          if (user?.role === "practitioner") {
+            return <PractitionerDashboard user={user} onLogout={handleLogout} />;
+          }
+
+          // Show client interface for regular users
+          return <HomePage />;
+        }}
+      </Route>
+      
+      {/* Default route - redirect to HealingConnect for now */}
+      <Route path="/" component={() => <LandingPage />} />
+      <Route component={NotFound} />
     </Switch>
   );
 }
