@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertLeadSchema, type InsertLead } from "@shared/schema";
@@ -11,6 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { Mail, Phone, MapPin, Clock, CheckCircle } from "lucide-react";
+import {
+  generateContactPageMetaTags,
+  updateDancingButterflyMetaTags
+} from "@/lib/dancingbutterfly-seo";
 
 // Form type that matches the lead schema
 type ContactFormData = {
@@ -31,6 +35,12 @@ const contactFormSchema = insertLeadSchema.extend({
 export default function Contact() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();
+
+  // SEO optimization for Contact page
+  useEffect(() => {
+    const metaTags = generateContactPageMetaTags();
+    updateDancingButterflyMetaTags(metaTags);
+  }, []);
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),

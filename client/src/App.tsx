@@ -40,6 +40,7 @@ import PractitionerProfile from "@/components/PractitionerProfile";
 import LandingPage from "./components/LandingPage";
 import PractitionerDashboard from "./components/PractitionerDashboard";
 import Contact from "./pages/Contact";
+import Home from "./pages/Home";
 import NotFound from "./pages/not-found";
 
 function HomePage() {
@@ -300,6 +301,8 @@ function Router() {
   // Dancing Butterfly business website routes (public, no authentication required)
   return (
     <Switch>
+      {/* Dancing Butterfly Business Website */}
+      <Route path="/" component={Home} />
       <Route path="/contact" component={Contact} />
       
       {/* HealingConnect routes */}
@@ -325,8 +328,6 @@ function Router() {
         }}
       </Route>
       
-      {/* Default route - redirect to HealingConnect for now */}
-      <Route path="/" component={() => <LandingPage />} />
       <Route component={NotFound} />
     </Switch>
   );
