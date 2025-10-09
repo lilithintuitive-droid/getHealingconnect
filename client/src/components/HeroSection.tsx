@@ -5,12 +5,24 @@ import { Search, MapPin, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import heroImage from "@assets/generated_images/Wellness_hero_background_image_05ce9014.png";
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  onSearch?: (query: string, location: string) => void;
+}
+
+export default function HeroSection({ onSearch }: HeroSectionProps) {
   const [location, setLocation] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = () => {
-    console.log("Hero search triggered:", searchQuery, location);
+    if (onSearch) {
+      onSearch(searchQuery, location);
+    } else {
+      // Scroll to practitioners section if it exists
+      const practitionersSection = document.getElementById('practitioners-section');
+      if (practitionersSection) {
+        practitionersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
   };
 
   return (

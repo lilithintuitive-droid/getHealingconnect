@@ -50,7 +50,11 @@ export default function ServiceCategories() {
   ];
 
   const handleServiceClick = (link: string) => {
-    console.log("Service clicked:", link);
+    // Scroll to practitioners section to find practitioners for this service
+    const practitionersSection = document.getElementById('practitioners-section');
+    if (practitionersSection) {
+      practitionersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   return (

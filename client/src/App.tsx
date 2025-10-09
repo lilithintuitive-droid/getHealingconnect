@@ -105,9 +105,10 @@ function HomePage() {
   const [filters, setFilters] = useState({
     specialties: [] as string[],
     location: "",
-    priceRange: [0, 500] as [number, number],
+    priceRange: [0, 500] as number[],
     availability: "",
     rating: 0,
+    distance: 50,
   });
 
   // Fetch all practitioners with their specialties and availability
@@ -237,7 +238,7 @@ function HomePage() {
       <ThreeStepProcess />
       
       {/* Practitioner Directory with Search and Filter */}
-      <section className="py-16 bg-muted/30">
+      <section id="practitioners-section" className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-4">
@@ -260,6 +261,7 @@ function HomePage() {
                   priceRange: [0, 500],
                   availability: "",
                   rating: 0,
+                  distance: 50,
                 })}
               />
             </div>

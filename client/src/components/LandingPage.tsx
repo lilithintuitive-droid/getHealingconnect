@@ -25,12 +25,17 @@ export default function LandingPage() {
     window.location.href = "/api/login";
   };
 
+  const handleHeroSearch = () => {
+    // Redirect to login when trying to search
+    window.location.href = "/api/login";
+  };
+
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       <Header isDark={isDark} onThemeToggle={() => setIsDark(!isDark)} />
       
       <div className="pt-16">
-        <HeroSection />
+        <HeroSection onSearch={handleHeroSearch} />
         
         <ServiceCategories />
         

@@ -34,7 +34,11 @@ export default function ThreeStepProcess() {
   ];
 
   const handleStepAction = (link: string) => {
-    console.log("Step action clicked:", link);
+    // Scroll to practitioners section for all actions
+    const practitionersSection = document.getElementById('practitioners-section');
+    if (practitionersSection) {
+      practitionersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   return (

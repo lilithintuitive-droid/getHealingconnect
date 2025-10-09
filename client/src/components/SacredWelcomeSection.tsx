@@ -3,7 +3,11 @@ import { Heart, ArrowRight } from "lucide-react";
 
 export default function SacredWelcomeSection() {
   const handleLearnMore = () => {
-    console.log("Learn more about who we are clicked");
+    // Scroll to practitioners section to learn more
+    const practitionersSection = document.getElementById('practitioners-section');
+    if (practitionersSection) {
+      practitionersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   return (
