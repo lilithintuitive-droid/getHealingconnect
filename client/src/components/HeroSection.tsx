@@ -39,13 +39,18 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
 
       {/* Content */}
       <header className="relative z-10 text-center max-w-4xl px-6">
+        {/* Clear Value Proposition Badge */}
+        <div className="inline-flex items-center px-4 py-2 bg-primary/20 backdrop-blur-sm border border-white/30 rounded-full text-white text-sm font-medium mb-6">
+          <span className="w-2 h-2 bg-accent rounded-full mr-2"></span>
+          Trusted Holistic Practitioner Booking Platform
+        </div>
+        
         <h1 className="text-3xl sm:text-4xl md:text-6xl font-serif text-white mb-6 leading-tight">
-          Experience the Art of
-          <span className="text-accent block mt-2 text-3xl sm:text-4xl md:text-6xl">Sacred Healing</span>
+          Book Certified Holistic Practitioners
+          <span className="text-accent block mt-2 text-3xl sm:text-4xl md:text-6xl">In Your Area</span>
         </h1>
         <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-          Connect with certified holistic practitioners who honor the sacred nature of healing. 
-          Discover transformative modalities that nurture mind, body, and spirit.
+          Find and book appointments with verified acupuncturists, massage therapists, reiki masters, and energy healers near you. Same-day appointments available.
         </p>
 
         {/* Search Section */}

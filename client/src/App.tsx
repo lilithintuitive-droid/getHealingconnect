@@ -42,6 +42,9 @@ import PractitionerDashboard from "./components/PractitionerDashboard";
 import Contact from "./pages/Contact";
 import Home from "./pages/Home";
 import NotFound from "./pages/not-found";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import Footer from "./components/Footer";
 
 // Transform availability data to a simple status
 function getAvailabilityStatus(availability: Availability[]): TransformedPractitioner["availability"] {
@@ -300,6 +303,9 @@ function HomePage() {
       {/* Testimonials */}
       <TestimonialsSection />
 
+      {/* Footer */}
+      <Footer />
+
       {/* Modals */}
       {selectedPractitioner && showBookingModal && (
         <BookingModal
@@ -354,6 +360,10 @@ function Router() {
           return <HomePage />;
         }}
       </Route>
+      
+      {/* Legal Pages */}
+      <Route path="/privacy" component={PrivacyPolicy} />
+      <Route path="/terms" component={TermsOfService} />
       
       <Route component={NotFound} />
     </Switch>

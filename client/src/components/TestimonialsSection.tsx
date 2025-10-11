@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Quote, Star } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Quote, Star, CheckCircle } from "lucide-react";
 
 interface Testimonial {
   id: string;
@@ -10,6 +11,8 @@ interface Testimonial {
   rating: number;
   testimonial: string;
   imageUrl?: string;
+  date: string;
+  verified: boolean;
 }
 
 export default function TestimonialsSection() {
@@ -22,7 +25,9 @@ export default function TestimonialsSection() {
       specialty: "Acupuncture",
       rating: 5,
       testimonial: "The energy healing session with Dr. Chen completely transformed my approach to wellness. I felt my body release tension I didn't even know I was carrying. My stress levels have dramatically decreased, and I feel more centered than ever before.",
-      imageUrl: undefined
+      imageUrl: undefined,
+      date: "2 weeks ago",
+      verified: true
     },
     {
       id: "2", 
@@ -31,7 +36,9 @@ export default function TestimonialsSection() {
       specialty: "Massage Therapy",
       rating: 5,
       testimonial: "I've been struggling with chronic pain for years. After just three sessions of therapeutic massage, I experienced more relief than I had with conventional treatments. The practitioner's intuitive approach addressed not just symptoms but underlying patterns.",
-      imageUrl: undefined
+      imageUrl: undefined,
+      date: "1 month ago",
+      verified: true
     },
     {
       id: "3",
@@ -40,7 +47,9 @@ export default function TestimonialsSection() {
       specialty: "Reiki",
       rating: 5,
       testimonial: "The Reiki session opened emotional and energetic pathways that had been blocked for years. I left feeling lighter, more connected to myself, and with a renewed sense of purpose. This is truly sacred healing work.",
-      imageUrl: undefined
+      imageUrl: undefined,
+      date: "3 weeks ago",
+      verified: true
     },
     {
       id: "4",
@@ -49,7 +58,9 @@ export default function TestimonialsSection() {
       specialty: "Holistic Counseling",
       rating: 5,
       testimonial: "What I thought would be just stress relief became a profound journey of self-discovery. The practitioner's gentle guidance helped me understand the mind-body connection in ways I never imagined possible.",
-      imageUrl: undefined
+      imageUrl: undefined,
+      date: "1 week ago",
+      verified: true
     },
     {
       id: "5",
@@ -58,7 +69,9 @@ export default function TestimonialsSection() {
       specialty: "Energy Healing",
       rating: 5,
       testimonial: "I approached holistic healing with skepticism, but the results speak for themselves. My anxiety has significantly reduced, I sleep better, and I feel more aligned with my authentic self. This work truly heals on all levels.",
-      imageUrl: undefined
+      imageUrl: undefined,
+      date: "2 months ago",
+      verified: true
     },
     {
       id: "6",
@@ -67,7 +80,9 @@ export default function TestimonialsSection() {
       specialty: "Meditation Coaching",
       rating: 5,
       testimonial: "The meditation and breathwork sessions have given me tools I use daily. I'm more present, less reactive, and feel deeply connected to my inner wisdom. Every session brings new insights and healing.",
-      imageUrl: undefined
+      imageUrl: undefined,
+      date: "3 days ago",
+      verified: true
     }
   ];
 
@@ -97,33 +112,44 @@ export default function TestimonialsSection() {
                   "{testimonial.testimonial}"
                 </blockquote>
 
-                {/* Rating */}
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-4 h-4 ${
-                        i < testimonial.rating 
-                          ? "fill-yellow-400 text-yellow-400" 
-                          : "text-gray-300"
-                      }`}
-                    />
-                  ))}
+                {/* Rating and Verification */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-4 h-4 ${
+                          i < testimonial.rating 
+                            ? "fill-yellow-400 text-yellow-400" 
+                            : "text-gray-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  {testimonial.verified && (
+                    <Badge variant="outline" className="text-xs gap-1">
+                      <CheckCircle className="w-3 h-3" />
+                      Verified
+                    </Badge>
+                  )}
                 </div>
 
                 {/* Author Info */}
-                <div className="flex items-center space-x-3">
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src={testimonial.imageUrl} alt={testimonial.name} />
-                    <AvatarFallback className="text-sm font-serif">
-                      {testimonial.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h4 className="font-semibold text-foreground">{testimonial.name}</h4>
-                    <p className="text-sm text-muted-foreground">{testimonial.location}</p>
-                    <p className="text-xs text-primary font-medium">{testimonial.specialty}</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={testimonial.imageUrl} alt={testimonial.name} />
+                      <AvatarFallback className="text-sm font-serif">
+                        {testimonial.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h4 className="font-semibold text-foreground">{testimonial.name}</h4>
+                      <p className="text-sm text-muted-foreground">{testimonial.location}</p>
+                      <p className="text-xs text-primary font-medium">{testimonial.specialty}</p>
+                    </div>
                   </div>
+                  <p className="text-xs text-muted-foreground">{testimonial.date}</p>
                 </div>
               </CardContent>
             </Card>

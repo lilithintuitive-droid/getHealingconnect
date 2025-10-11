@@ -8,6 +8,8 @@ import ServiceCategories from "@/components/ServiceCategories";
 import SacredWelcomeSection from "@/components/SacredWelcomeSection";
 import ThreeStepProcess from "@/components/ThreeStepProcess";
 import TestimonialsSection from "@/components/TestimonialsSection";
+import StatsSection from "@/components/StatsSection";
+import Footer from "@/components/Footer";
 
 export default function LandingPage() {
   const [isDark, setIsDark] = useState(false);
@@ -42,16 +44,18 @@ export default function LandingPage() {
         <SacredWelcomeSection />
         
         <ThreeStepProcess />
+        
+        <StatsSection />
 
         {/* Call-to-Action Section for Authentication */}
         <section className="py-16 bg-primary/5" aria-labelledby="cta-heading">
           <div className="container mx-auto px-4 text-center">
             <header className="mb-8">
               <h2 id="cta-heading" className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-4">
-                Ready to Begin Your Healing Journey?
+                Join 10,000+ People Finding Healing
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Join thousands who have found their path to wellness. Connect with certified practitioners or share your healing gifts with others.
+                Book your first session today with verified, certified holistic practitioners. Get started in 2 minutes.
               </p>
             </header>
 
@@ -109,6 +113,8 @@ export default function LandingPage() {
         </section>
 
         <TestimonialsSection />
+
+        <Footer />
       </div>
     </div>
   );
