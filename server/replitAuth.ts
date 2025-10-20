@@ -1,3 +1,14 @@
+// ============================================================================
+// REPLIT-SPECIFIC AUTHENTICATION
+// ============================================================================
+// This file implements Replit's OIDC authentication system.
+// 
+// FOR LOCAL DEVELOPMENT:
+// - You can skip authentication by commenting out setupAuth() in routes.ts
+// - Or implement your own auth (Passport.js local strategy, Auth0, Clerk, etc.)
+// - This file requires REPLIT_DOMAINS and REPL_ID environment variables
+// ============================================================================
+
 import * as client from "openid-client";
 import { Strategy, type VerifyFunction } from "openid-client/passport";
 
@@ -8,9 +19,13 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 
-// From javascript_log_in_with_replit integration
+// REPLIT-SPECIFIC: Check for Replit domains
+// For local development, set REPLIT_DOMAINS to "localhost" or comment out
 if (!process.env.REPLIT_DOMAINS) {
-  throw new Error("Environment variable REPLIT_DOMAINS not provided");
+  console.warn("⚠️  REPLIT_DOMAINS not set - authentication will not work");
+  console.warn("   For local development, you can skip auth or use your own system");
+  // Uncomment the next line to make it optional:
+  // process.env.REPLIT_DOMAINS = "localhost";
 }
 
 const getOidcConfig = memoize(

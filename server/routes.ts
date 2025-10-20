@@ -3,6 +3,9 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import express from "express";
 import path from "path";
+
+// REPLIT-SPECIFIC: Authentication using Replit OIDC
+// For local development, these can be disabled/replaced with your own auth
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import {
   insertPractitionerSchema,
@@ -30,7 +33,10 @@ const practitionerSearchSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup authentication
+  // REPLIT-SPECIFIC: Setup Replit OIDC authentication
+  // For local development without Replit auth, you can:
+  // 1. Comment out this line and skip authentication (for testing)
+  // 2. Implement your own auth system (e.g., Passport.js with email/password)
   await setupAuth(app);
 
   // Auth routes
